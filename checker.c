@@ -11,12 +11,32 @@ typedef enum
   CHARGE_RATE_OUT_OF_RANGE
 } BatterySts_en;
 
+// Separate functions for each condition
+int isTempOrSocOutOfRange(float qty, float ll, float ul) 
+{
+  return (qty < ll || qty > ul);
+}
 
-BatterySts_en batteryIsOk(float temperature, float soc, float chargeRate) {
+int isChargeRateOutOfRange(float chargeRate)
+{
+  return (chargeRate > 0.8);
+}
 
-  return (temperature < 0 || temperature > 45) ? TEMP_OUT_OF_RANGE :
-          (soc < 20 || soc > 80) ? SOC_OUT_OF_RANGE :
-          (chargeRate > 0.8) ? CHARGE_RATE_OUT_OF_RANGE : BATTERY_OK;
+BatterySts_en batteryIsOk(float temperature, float soc, float chargeRate)
+{
+  if (isTempOrSocOutOfRange(temperature,0,45))
+  {
+    return TEMP_OUT_OF_RANGE;
+  }
+  if (isTempOrSocOutOfRange(soc,20,80))
+  {
+    return SOC_OUT_OF_RANGE;
+  }
+  if (isChargeRateOutOfRange(chargeRate))
+  {
+    return CHARGE_RATE_OUT_OF_RANGE;
+  }
+  return BATTERY_OK;
 }
 
 int main() 
@@ -26,4 +46,3 @@ int main()
   assert(batteryIsOk(25, 70, 0.9) == 3);
   assert(batteryIsOk(20, 50, 0.5) == 0);
 }
-
