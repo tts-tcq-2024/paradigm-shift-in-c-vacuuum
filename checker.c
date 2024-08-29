@@ -14,21 +14,9 @@ typedef enum
 
 BatterySts_en batteryIsOk(float temperature, float soc, float chargeRate) {
 
-  BatterySts_en ret = BATTERY_OK;
-
-  if (temperature < 0 || temperature > 45) 
-  {
-    return TEMP_OUT_OF_RANGE;
-  }
-  if (soc < 20 || soc > 80) 
-  {
-    return SOC_OUT_OF_RANGE;
-  }
-  if (chargeRate > 0.8) 
-  {
-    return CHARGE_RATE_OUT_OF_RANGE;
-  }
-  return BATTERY_OK;
+  return (temperature < 0 || temperature > 45) ? TEMP_OUT_OF_RANGE :
+          (soc < 20 || soc > 80) ? SOC_OUT_OF_RANGE :
+          (chargeRate > 0.8) ? CHARGE_RATE_OUT_OF_RANGE : BATTERY_OK;
 }
 
 int main() 
@@ -38,3 +26,4 @@ int main()
   assert(batteryIsOk(25, 70, 0.9) == 3);
   assert(batteryIsOk(20, 50, 0.5) == 0);
 }
+
