@@ -1,21 +1,45 @@
 #include <stdio.h>
 #include <assert.h>
+#include <string.h>
 
-int batteryIsOk(float temperature, float soc, float chargeRate) {
-  if(temperature < 0 || temperature > 45) {
-    printf("Temperature out of range!\n");
-    return 0;
-  } else if(soc < 20 || soc > 80) {
-    printf("State of Charge out of range!\n");
-    return 0;
-  } else if(chargeRate > 0.8) {
-    printf("Charge Rate out of range!\n");
-    return 0;
+// enumeration to avoid multiple print statements
+typedef enum 
+{
+  BATTERY_OK,
+  TEMP_OUT_OF_RANGE,
+  SOC_OUT_OF_RANGE,
+  CHARGE_RATE_OUT_OF_RANGE
+} BatterySts_en;
+
+
+BatterySts_en batteryIsOk(float temperature, float soc, float chargeRate) {
+
+  BatterySts_en ret = BATTERY_OK;
+
+  if ((temperature < 0 || temperature > 45) || 
+  (soc < 20 || soc > 80) || 
+  (chargeRate > 0.8)) 
+  {
+    if (temperature < 0 || temperature > 45)
+    {
+      ret = TEMP_OUT_OF_RANGE;
+    }
+    else if (soc < 20 || soc > 80)
+    {
+      ret = SOC_OUT_OF_RANGE;
+    }
+    else
+    {
+    ret = CHARGE_RATE_OUT_OF_RANGE;
+    }
   }
-  return 1;
+  return ret;
 }
 
-int main() {
-  assert(batteryIsOk(25, 70, 0.7));
-  assert(!batteryIsOk(50, 85, 0));
+int main() 
+{
+  assert(batteryIsOk(-30, 70, 0.7) == 1);
+  assert(batteryIsOk(40, 10, 0) == 2);
+  assert(batteryIsOk(25, 70, 0.9) == 3);
+  assert(batteryIsOk(20, 50, 0.5) == 0);
 }
