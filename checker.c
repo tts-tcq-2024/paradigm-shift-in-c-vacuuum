@@ -3,16 +3,25 @@
 #include <string.h>
 
 // enumeration to avoid multiple print statements
-typedef enum 
-{
+typedef enum {
   BATTERY_OK,
   TEMP_OUT_OF_RANGE,
   SOC_OUT_OF_RANGE,
   CHARGE_RATE_OUT_OF_RANGE
 } BatterySts_en;
 
-// Separate functions for each condition
+typedef enum {
+  NORMAL,
+  TOO_LOW,
+  TOO_HIGH
+} BreachType_en;
 
+typedef struct {
+  BatterySts_en status;
+  BreachType_en breachType;
+} BatteryCheckResult_st;
+
+// Separate functions for each condition i.e helper functions
 int isTempOrSocOutOfRange(float qty, float ll, float ul) 
 {
   return (qty < ll || qty > ul);
@@ -23,47 +32,69 @@ int isChargeRateOutOfRange(float chargeRate)
   return (chargeRate > 0.8);
 }
 
-BatterySts_en checkTemperature(float temperature)
+BatteryCheckResult_st checkTemperature(float temperature)
 {
-  if (isTempOrSocOutOfRange(temperature, 0, 45))
-  {
-    return TEMP_OUT_OF_RANGE;
-  }
-  return BATTERY_OK;
+    BatteryCheckResult_st result = {BATTERY_OK, NORMAL};
+
+    if (temperature < 0)
+    {
+        result.status = TEMP_OUT_OF_RANGE;
+        result.breachType = TOO_LOW;
+    }
+    else if (temperature > 45)
+    {
+        result.status = TEMP_OUT_OF_RANGE;
+        result.breachType = TOO_HIGH;
+    }
+
+    return result;
 }
 
-BatterySts_en checkSoc(float soc)
+BatteryCheckResult_st checkSoc(float soc)
 {
-  if (isTempOrSocOutOfRange(soc, 20, 80))
+  BatteryCheckResult_st result = {BATTERY_OK, NORMAL};
+
+  if (soc < 20)
   {
-    return SOC_OUT_OF_RANGE;
+    result.status = SOC_OUT_OF_RANGE;
+    result.breachType = TOO_LOW;
   }
-  return BATTERY_OK;
+  else if (soc > 80)
+  {
+    result.status = SOC_OUT_OF_RANGE;
+    result.breachType = TOO_HIGH;
+  }
+
+  return result;
 }
 
 BatterySts_en checkChargeRate(float chargeRate)
 {
-  if (isChargeRateOutOfRange(chargeRate))
+  BatteryCheckResult_st result = {BATTERY_OK, NORMAL};
+
+  if (chargeRate > 0.8)
   {
-    return CHARGE_RATE_OUT_OF_RANGE;
+    result.status = CHARGE_RATE_OUT_OF_RANGE;
+    result.breachType = TOO_HIGH;
   }
-  return BATTERY_OK;
+
+  return result.status;
 }
 
 BatterySts_en batteryIsOk(float temperature, float soc, float chargeRate)
 {
-  BatterySts_en status;
+  BatteryCheckResult_st result;
 
-  status = checkTemperature(temperature);
-  if (status != BATTERY_OK) 
+  result = checkTemperature(temperature);
+  if (result.status != BATTERY_OK)
   {
-    return status;
+    return result.status;
   }
 
-  status = checkSoc(soc);
-  if (status != BATTERY_OK) 
+  result = checkSoc(soc);
+  if (result.status != BATTERY_OK)
   {
-    return status;
+    return result.status;
   }
 
   return checkChargeRate(chargeRate);
@@ -76,4 +107,3 @@ int main()
   assert(batteryIsOk(25, 70, 0.9) == 3);
   assert(batteryIsOk(20, 50, 0.5) == 0);
 }
-
