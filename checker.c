@@ -22,6 +22,7 @@ int isChargeRateOutOfRange(float chargeRate)
   return (chargeRate > 0.8);
 }
 
+
 BatterySts_en batteryIsOk(float temperature, float soc, float chargeRate)
 {
   if (isTempOrSocOutOfRange(temperature,0,45))
@@ -36,7 +37,6 @@ BatterySts_en batteryIsOk(float temperature, float soc, float chargeRate)
   {
     return CHARGE_RATE_OUT_OF_RANGE;
   }
-  return BATTERY_OK;
 }
 
 int main() 
