@@ -64,14 +64,14 @@ Shorten the Semantic distance
   
 To implement the warning level feature and prepare for potential future customization (where warnings may be enabled or disabled for individual parameters), the Strategy Pattern is a suitable design choice. The Strategy Pattern allows you to encapsulate different algorithms (checking and warning behavior in this case) and makes it easier to modify or extend the functionality without changing the code's structure. Check- https://refactoring.guru/design-patterns/strategy
 
-  # Why the Strategy Pattern?
+  ### Why the Strategy Pattern?
 
 - Encapsulation of Behavior: The checks for temperature, SoC, and charge rate each have distinct logic for detecting breaches. Encapsulating these checks into separate strategies (classes) makes the code more modular and easier to modify.
 - Open for Extension, Closed for Modification: The Strategy Pattern allows us to extend the warning logic without modifying the existing code (just by adding new strategies). This minimizes the impact of future changes, such as adding new parameters or enabling/disabling warnings selectively.
 - Reusability: The pattern supports reusability as we can easily create new strategies if new parameters or new types of warnings are needed.
 - Tuning Flexibility: Customers might want warnings for specific parameters but not others. The Strategy Pattern can enable or disable warnings for specific strategies without affecting the others.
   
-  # Steps undertaken in Refactoring
+  ### Steps undertaken in Refactoring
 
 - Encapsulate Check and Warning Logic: Define separate strategies for each battery parameter (Temperature, SoC, and Charge Rate) that will handle both breach and warning levels.
 - Warning Logic: Add a tolerance-based warning calculation for each parameter. The warning logic will be separate from the breach logic but will be encapsulated in the same strategy.
