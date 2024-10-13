@@ -51,12 +51,30 @@ BatteryCheckResult_st checkLimits(float value, BatteryParameter param) {
   return result;
 }
 
+int checkParameterLowerLimitBreachAndTolerance(float value, BatteryParameter param) {
+  if(value >= param.lowerLimit && value < param.lowerLimit + param.warningTolerance) {
+    return 1;
+  }
+  else {
+    return 0;
+  }
+}
+
+int checkParameterUpperLimitBreachAndTolerance(float value, BatteryParameter param) {
+  if(value <= param.upperLimit && value > param.upperLimit - param.warningTolerance) {
+    return 1;
+  }
+  else {
+    return 0;
+  }
+}
+
 BatteryCheckResult_st checkTolerance(float value, BatteryParameter param) {
   BatteryCheckResult_st result = {BATTERY_OK, NORMAL};
   
-  if (value >= param.lowerLimit && value < param.lowerLimit + param.warningTolerance) {
+  if (checkParameterLowerLimitBreachAndTolerance(value,param)) {
     result.breachType = APPROACHING_LOW;
-  } else if (value <= param.upperLimit && value > param.upperLimit - param.warningTolerance) {
+  } else if (checkParameterUpperLimitBreachAndTolerance(value,param)) {
     result.breachType = APPROACHING_HIGH;
   }
   return result;
@@ -154,7 +172,7 @@ int checkIfBatteryIsOk(BatteryCheckResult_st result)
   }
 
 }
-// Battery check logic
+
 int batteryIsOk(float temperature, float soc, float chargeRate) {
   int ret = 0;
 
@@ -190,5 +208,6 @@ int main() {
   assert(batteryIsOk(30, 50, 0.55) == 0);
   assert(batteryIsOk(-10, 90, 0.7) == 1);
   assert(batteryIsOk(45, 100, 0.8) == 1);
+
   return 0;
 }
