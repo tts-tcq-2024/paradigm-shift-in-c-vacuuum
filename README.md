@@ -62,11 +62,11 @@ Shorten the Semantic distance
 
 ## Refactoring Approach
   
-To implement the warning level feature and prepare for potential future customization (where warnings may be enabled or disabled for individual parameters), the Strategy Pattern is a suitable design choice. The Strategy Pattern allows you to encapsulate different algorithms (checking and warning behavior in this case) and makes it easier to modify or extend the functionality without changing the code's structure. Check- https://refactoring.guru/design-patterns/strategy
+To implement the warning level feature and prepare for potential future customization (where warnings may be enabled or disabled for individual parameters), the Strategy Pattern is a suitable design choice. The Strategy Pattern is used to encapsulate different algorithms (checking and warning behavior in this case) and make it easier to modify or extend the functionality without changing the code's structure. Check- https://refactoring.guru/design-patterns/strategy
 
 ### Why the Strategy Pattern?
 
-- Encapsulation of Behavior: The checks for temperature, SoC, and charge rate each have distinct logic for detecting breaches. Encapsulating these checks into separate strategies (classes) makes the code more modular and easier to modify.
+- Encapsulation of Behavior: The checks for temperature, SoC, and charge rate each have distinct logic for detecting breaches. Encapsulating these checks into separate strategies makes the code more modular and easier to modify.
 - Open for Extension, Closed for Modification: The Strategy Pattern allows us to extend the warning logic without modifying the existing code (just by adding new strategies). This minimizes the impact of future changes, such as adding new parameters or enabling/disabling warnings selectively.
 - Reusability: The pattern supports reusability as we can easily create new strategies if new parameters or new types of warnings are needed.
 - Tuning Flexibility: Customers might want warnings for specific parameters but not others. The Strategy Pattern can enable or disable warnings for specific strategies without affecting the others.
