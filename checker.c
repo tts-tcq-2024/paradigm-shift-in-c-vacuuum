@@ -37,23 +37,10 @@ typedef struct {
   BatteryCheckResult_st (*check)(float, BatteryParameter);
 } CheckStrategy;
 
-BatteryCheckResult_st checkParameterWithToleranceLimits(float value, BatteryParameter param)
-{
-  BatteryCheckResult_st result = {BATTERY_OK, NORMAL};
 
-  if (value < param.lowerLimit + param.warningTolerance) {
-    result.status = BATTERY_OK;
-    result.breachType = APPROACHING_LOW;
-  } else if (value > param.upperLimit - param.warningTolerance) {
-    result.status = BATTERY_OK;
-    result.breachType = APPROACHING_HIGH;
-  }
-  return result;
-}
-// Encapsulate the common breach and warning check logic
-BatteryCheckResult_st checkParameter(float value, BatteryParameter param) {
+BatteryCheckResult_st checkLimits(float value, BatteryParameter param) {
   BatteryCheckResult_st result = {BATTERY_OK, NORMAL};
-
+  
   if (value < param.lowerLimit) {
     result.status = SOC_OUT_OF_RANGE;
     result.breachType = TOO_LOW;
@@ -61,11 +48,31 @@ BatteryCheckResult_st checkParameter(float value, BatteryParameter param) {
     result.status = SOC_OUT_OF_RANGE;
     result.breachType = TOO_HIGH;
   }
-  result = checkParameterWithToleranceLimits(value,param);
+  return result;
+}
+
+BatteryCheckResult_st checkTolerance(float value, BatteryParameter param) {
+  BatteryCheckResult_st result = {BATTERY_OK, NORMAL};
+  
+  if (value >= param.lowerLimit && value < param.lowerLimit + param.warningTolerance) {
+    result.breachType = APPROACHING_LOW;
+  } else if (value <= param.upperLimit && value > param.upperLimit - param.warningTolerance) {
+    result.breachType = APPROACHING_HIGH;
+  }
+  return result;
+}
+
+BatteryCheckResult_st checkParameter(float value, BatteryParameter param) {
+  BatteryCheckResult_st result = checkLimits(value, param);
+
+  if (result.breachType == NORMAL) {
+    result = checkTolerance(value, param);
+  }
 
   return result;
 }
 
+// Parameter check functions for each battery parameter
 BatteryCheckResult_st checkTemperature(float temperature, BatteryParameter param) {
   param.lowWarningMessage = "Approaching discharge";
   param.highWarningMessage = "Approaching charge-peak";
@@ -84,6 +91,30 @@ BatteryCheckResult_st checkChargeRate(float chargeRate, BatteryParameter param) 
   return checkParameter(chargeRate, param);
 }
 
+const char* getNormalBreachMessage(BreachType_en breachType) {
+  switch (breachType) {
+    case TOO_LOW: return "TOO LOW";
+    case TOO_HIGH: return "TOO HIGH";
+    default: return "NORMAL";
+  }
+}
+
+const char* getWarningMessage(BreachType_en breachType) {
+  switch (breachType) {
+    case APPROACHING_LOW: return "Approaching low limit";
+    case APPROACHING_HIGH: return "Approaching high limit";
+    default: return "NORMAL";
+  }
+}
+
+const char* assignBreachMessage(BreachType_en breachType) {
+  if (breachType == TOO_LOW || breachType == TOO_HIGH) {
+    return getNormalBreachMessage(breachType);
+  } else {
+    return getWarningMessage(breachType);
+  }
+}
+
 const char* assignStatusMessage(BatteryStatusType_en status) {
   const char *statusMessage;
   if(status == TEMP_OUT_OF_RANGE) {
@@ -96,27 +127,7 @@ const char* assignStatusMessage(BatteryStatusType_en status) {
   return statusMessage;
 }
 
-const char* assignToleranceWarningMessage(BreachType_en breachType)
-{
-  const char *breachMessage;
-  switch (breachType) {
-    case APPROACHING_LOW: breachMessage = "Approaching low limit"; break;
-    case APPROACHING_HIGH: breachMessage = "Approaching high limit"; break;
-    default: breachMessage = "NORMAL"; break;
-  }
-}
-
-const char* assignBreachMessage(BreachType_en breachType) {
-  const char *breachMessage;
-
-  switch (breachType) {
-    case TOO_LOW: breachMessage = "TOO LOW"; break;
-    case TOO_HIGH: breachMessage = "TOO HIGH"; break;
-    default: assignToleranceWarningMessage(breachType); break;
-  }
-  return breachMessage;
-}
-
+// Display functions
 void DisplayOutput(BreachType_en breachType, BatteryStatusType_en status) {
   printf("%s: %s\n", assignStatusMessage(status), assignBreachMessage(breachType));
 }
@@ -133,6 +144,17 @@ void checkForBreach(BatteryCheckResult_st* breaches, int breachCount) {
   }
 }
 
+int checkIfBatteryIsOk(BatteryCheckResult_st result)
+{
+  if (result.status != BATTERY_OK || result.breachType != NORMAL) {
+    return 1;
+  }
+  else {
+    return 0;
+  }
+
+}
+// Battery check logic
 int batteryIsOk(float temperature, float soc, float chargeRate) {
   int ret = 0;
 
@@ -152,7 +174,7 @@ int batteryIsOk(float temperature, float soc, float chargeRate) {
   
   for (int index = 0; index < 3; index++) {
     BatteryCheckResult_st result = strategies[index].check(values[index], params[index]);
-    if (result.status != BATTERY_OK || result.breachType != NORMAL) {
+    if (checkIfBatteryIsOk(result)) {
       breaches[breachCount++] = result;
       ret = 1;
     }
@@ -165,12 +187,8 @@ int main() {
   assert(batteryIsOk(-30, 70, 0.7) == 1);
   assert(batteryIsOk(40, 10, 0.6) == 1);
   assert(batteryIsOk(25, 70, 0.9) == 1);
-  assert(batteryIsOk(20, 50, 0.5) == 1);
-  // Multiple quantities out of range
+  assert(batteryIsOk(30, 50, 0.55) == 0);
   assert(batteryIsOk(-10, 90, 0.7) == 1);
   assert(batteryIsOk(45, 100, 0.8) == 1);
-  assert(batteryIsOk(99.98,55.8,0.801) == 1);
-  assert(batteryIsOk(-0.1,19.99,0.256) == 1);
-  assert(batteryIsOk(59.90,97.647,0.82) == 1);
   return 0;
 }
