@@ -92,8 +92,8 @@ BatteryCheckResult_st checkParameter(float value, BatteryParameter param) {
 
 // Parameter check functions for each battery parameter
 BatteryCheckResult_st checkTemperature(float temperature, BatteryParameter param) {
-  param.lowWarningMessage = "Approaching discharge";
-  param.highWarningMessage = "Approaching charge-peak";
+  param.lowWarningMessage = "Approaching low temperature limit";
+  param.highWarningMessage = "Approaching high temperature limit";
   return checkParameter(temperature, param);
 }
 
