@@ -40,5 +40,7 @@ int BatteryIsOk(float temperature, float soc, float chargeRate, void (*outputFun
 BatteryCheckResult_st CheckParameter(float value, BatteryParameter param);
 BatteryCheckResult_st CheckTolerance(float value, BatteryParameter param);
 BatteryCheckResult_st CheckLimits(float value, BatteryParameter param);
-
+int CheckParameterLowerLimitBreachAndTolerance(float value, BatteryParameter param);
+int CheckParameterUpperLimitBreachAndTolerance(float value, BatteryParameter param);
+int CheckIfBatteryIsOk(BatteryCheckResult_st result);
 #endif // BATTERYCHECKER_H
