@@ -15,9 +15,9 @@ BatteryCheckResult_st CheckLimits(float value, BatteryParameter param) {
 
 BatteryCheckResult_st CheckTolerance(float value, BatteryParameter param) {
   BatteryCheckResult_st result = {BATTERY_OK, NORMAL};
-  if (value >= param.lowerLimit && value < param.lowerLimit + param.warningTolerance) {
+  if (CheckParameterLowerLimitBreachAndTolerance(value,param)) {
     result.breachType = APPROACHING_LOW;
-  } else if (value <= param.upperLimit && value > param.upperLimit - param.warningTolerance) {
+  } else if (CheckParameterUpperLimitBreachAndTolerance(value,param)) {
     result.breachType = APPROACHING_HIGH;
   }
   return result;
@@ -41,11 +41,10 @@ int BatteryIsOk(float temperature, float soc, float chargeRate, void (*outputFun
   BatteryStatusType_en statusTypes[] = {TEMP_OUT_OF_RANGE, SOC_OUT_OF_RANGE, CHARGE_RATE_OUT_OF_RANGE};
   for (int i = 0; i < 3; i++) {
     BatteryCheckResult_st result = CheckParameter(values[i], params[i]);
-    if (result.status != BATTERY_OK || result.breachType != NORMAL) {
+    if (CheckIfBatteryIsOk(result)) {
       isBatteryOk = 0;
       DisplayOutput(result.breachType, statusTypes[i], params[i], outputFunc);
     }
   }
   return isBatteryOk;
 }
-
